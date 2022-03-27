@@ -5,7 +5,6 @@ import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 
 /**
  * TODO: Refactor
- * TODO: Add a button to download the file
  * TODO: Add a button to stop transoding
  * TODO: Add progress bar
  * TODO: display warning for browser other than chrome
@@ -25,7 +24,7 @@ const MainPanel: React.FC = () => {
       return;
     }
     setMessage("Processing...");
-    await doTranscode(file);
+    const output = await doTranscode(file);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +58,8 @@ const MainPanel: React.FC = () => {
     setAudioSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "audio/mpeg" }))
     );
+
+    return outputName;
   };
 
   return (
@@ -72,7 +73,12 @@ const MainPanel: React.FC = () => {
 
         <Text>{message}</Text>
 
-        <audio src={audioSrc} controls></audio>
+        <article>
+          <audio src={audioSrc} controls></audio>
+          <a href={audioSrc} download={output}>
+            Dowload
+          </a>
+        </article>
       </Panel>
     </Grid>
   );
