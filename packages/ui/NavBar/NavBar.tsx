@@ -18,7 +18,7 @@ export const NavBar: React.FC<NavBarProps> = ({ name, items, ...props }) => {
       justify="space-between"
       wrap="wrap"
       padding="1.5rem"
-      bg="green.800"
+      bgGradient="linear(to-l, #7928CA, #FF0080)"
       color="white"
       {...props}
     >
