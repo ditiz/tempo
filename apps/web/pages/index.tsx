@@ -1,10 +1,10 @@
 import { Button } from "ui";
+import NavBar from "../components/NavBar";
 
 export default function Web() {
   return (
     <div>
-      <h1>Web</h1>
-      <Button />
+      <NavBar />
     </div>
   );
 }
