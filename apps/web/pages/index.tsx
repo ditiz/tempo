@@ -1,6 +1,4 @@
-import { Button } from "ui";
-import MainPanel from "../components/MainPanel";
-import NavBar from "../components/NavBar";
+import { NavBar, MainPanel } from "../components";
 
 export default function Web() {
   return (

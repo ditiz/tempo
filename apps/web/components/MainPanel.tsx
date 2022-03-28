@@ -1,4 +1,20 @@
-import { Box, Flex, Grid, Progress, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Grid,
+  Input,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Progress,
+  Slider,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderTrack,
+  Text,
+} from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Button, Panel } from "ui";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
@@ -27,6 +43,14 @@ const MainPanel: React.FC = () => {
 
   const ffmpeg = createFFmpeg();
 
+  const handleChangeSlider = (value: number) => {
+    setTempo(value / 100);
+  };
+
+  const handleChangeTempo = (valueAsString: string, valueAsNumber: number) => {
+    setTempo(valueAsNumber / 100);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("start");
@@ -49,9 +73,12 @@ const MainPanel: React.FC = () => {
     setFile(file);
   };
 
+  const tempoPercent = Math.round(tempo * 100);
+  const format = (val: number) => val + "%";
+
   return (
     <Grid placeItems="center" marginY="24">
-      <Panel>
+      <Panel w="2xl">
         <Text
           bgGradient="linear(to-l, #7928CA, #FF0080)"
           bgClip="text"
@@ -72,6 +99,40 @@ const MainPanel: React.FC = () => {
             >
               <input onChange={handleChange} type="file" name="file" />
             </Box>
+
+            <Flex flexFlow="column" marginY="2">
+              <Text>Select tempo</Text>
+              <Flex gap="4">
+                <Slider
+                  aria-label="slider-ex-1"
+                  value={tempoPercent}
+                  onChange={handleChangeSlider}
+                  min={50}
+                  max={200}
+                >
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <SliderThumb />
+                </Slider>
+
+                {/* TODO: use after to put % */}
+                <NumberInput
+                  value={tempoPercent}
+                  min={50}
+                  max={200}
+                  onChange={handleChangeTempo}
+                  width="28"
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Flex>
+            </Flex>
+
             <Flex justifyContent="center">
               <Button type="submit">Start</Button>
             </Flex>
