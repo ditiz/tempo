@@ -1,7 +1,14 @@
-import { Grid, Text } from "@chakra-ui/react";
+import { Box, Flex, Grid, Progress, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Panel } from "ui";
+import { Button, Panel } from "ui";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import { changeTempoTranscode } from "../utils/transcode";
+import { InfosTranscoding } from "../types";
+
+interface AudioElement {
+  src: string;
+  name: string;
+}
 
 /**
  * TODO: Refactor
@@ -10,21 +17,31 @@ import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
  * TODO: display warning for browser other than chrome
  */
 const MainPanel: React.FC = () => {
-  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [audioElement, setAudioElement] = useState<AudioElement[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState("Waiting for file");
-
-  const ffmpeg = createFFmpeg({
-    log: true,
+  const [infos, setInfos] = useState<InfosTranscoding>({
+    message: "Waiting for file",
+    percent: 0,
   });
+  const [tempo, setTempo] = useState(0.75);
+
+  const ffmpeg = createFFmpeg();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("start");
     if (!file) {
       return;
     }
-    setMessage("Processing...");
-    const output = await doTranscode(file);
+    setInfos({ message: "Processing...", percent: 0 });
+    const { outputFile, outputName } = await changeTempoTranscode({
+      ffmpeg,
+      file,
+      tempo,
+      setInfos: setInfos,
+    });
+
+    setAudioElement((els) => [...els, { src: outputFile, name: outputName }]);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,53 +49,51 @@ const MainPanel: React.FC = () => {
     setFile(file);
   };
 
-  const doTranscode = async (file: File) => {
-    const { name } = file;
-    const outputName = name.replace(/\.[^/.]+$/, "_slow.mp3");
-
-    setMessage("Loading ffmpeg-core.js");
-
-    await ffmpeg.load();
-    setMessage("Start transcoding");
-
-    ffmpeg.FS("writeFile", name, await fetchFile(file));
-    // await ffmpeg.run("-i", name, "-filter:a", '"atempo=0.5"', "test.mp3");
-    await ffmpeg.run("-i", name, "-filter:a", "atempo=0.5", outputName);
-
-    setMessage("Complete transcoding");
-
-    const data = ffmpeg.FS("readFile", outputName);
-
-    // Handle transcoding error
-    if (data.buffer.byteLength === 0) {
-      setMessage("Error transcoding");
-      return;
-    }
-
-    setAudioSrc(
-      URL.createObjectURL(new Blob([data.buffer], { type: "audio/mpeg" }))
-    );
-
-    return outputName;
-  };
-
   return (
     <Grid placeItems="center" marginY="24">
       <Panel>
-        <Text>Select a file</Text>
-        <form onSubmit={handleSubmit}>
-          <input onChange={handleChange} type="file" name="file" />
-          <button type="submit">Start</button>
-        </form>
+        <Text
+          bgGradient="linear(to-l, #7928CA, #FF0080)"
+          bgClip="text"
+          fontSize="2xl"
+          fontWeight="extrabold"
+        >
+          Select a file
+        </Text>
 
-        <Text>{message}</Text>
+        <Flex flexFlow="column" marginY="2">
+          <form onSubmit={handleSubmit}>
+            <Box
+              border="2px"
+              borderRadius="md"
+              borderColor="gray.600"
+              marginY="2"
+              padding="2"
+            >
+              <input onChange={handleChange} type="file" name="file" />
+            </Box>
+            <Flex justifyContent="center">
+              <Button type="submit">Start</Button>
+            </Flex>
+          </form>
+        </Flex>
 
-        <article>
-          <audio src={audioSrc} controls></audio>
-          <a href={audioSrc} download={output}>
-            Dowload
-          </a>
-        </article>
+        <Flex flexFlow="column" marginY="2">
+          <Text>{infos.message}</Text>
+          <Progress value={infos.percent} />
+        </Flex>
+
+        {audioElement.map((el) => (
+          <Flex key={el.name} gap="2">
+            <audio src={el.src} controls></audio>
+
+            <Grid placeItems="center">
+              <a href={el.src} download={el.name}>
+                <Button>Download</Button>
+              </a>
+            </Grid>
+          </Flex>
+        ))}
       </Panel>
     </Grid>
   );
