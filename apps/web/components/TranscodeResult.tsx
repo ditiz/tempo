@@ -17,7 +17,10 @@ const TranscodeResult: React.FC<TranscodeResultProps> = ({ audioElements }) => {
   return (
     <Panel>
       {audioElements.map((audioElement) => (
-        <TranscodeResultElement audioElement={audioElement} />
+        <TranscodeResultElement
+          key={audioElement.name}
+          audioElement={audioElement}
+        />
       ))}
     </Panel>
   );

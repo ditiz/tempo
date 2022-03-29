@@ -52,7 +52,7 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
       return;
     }
 
-    if (!tempos.length) {
+    if (!tempos.length || !tempos.find((t) => t.active)) {
       setInfos({
         message: {
           content: "Add a tempo",
@@ -70,16 +70,17 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
       isTranscoding: true,
     });
 
-    console.log(tempos);
     for (const tempo of tempos) {
-      const transcodeRes = await changeTempoTranscode({
-        ffmpeg,
-        file,
-        tempo: tempo.value,
-        setInfos: setInfos,
-      });
+      if (tempo.active) {
+        const transcodeRes = await changeTempoTranscode({
+          ffmpeg,
+          file,
+          tempo: tempo.value,
+          setInfos: setInfos,
+        });
 
-      setAudioElements((els) => [...els, transcodeRes]);
+        setAudioElements((els) => [...els, transcodeRes]);
+      }
     }
   };
 
@@ -106,13 +107,15 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
 
       <AddTempo setTempos={setTempos} />
 
+      <Divider marginY="4" />
+
       <Flex
         justifyContent="center"
         alignItems="center"
         flexFlow="column"
         gap="4"
       >
-        <Flex gap="2" flexWrap="wrap">
+        <Flex gap="2" flexWrap="wrap" justifyContent="center">
           {tempos.sort(sortTempos).map((tempo, index) => (
             <TempoElement tempo={tempo} setTempos={setTempos} key={index} />
           ))}
