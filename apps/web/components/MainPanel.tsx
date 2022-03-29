@@ -1,39 +1,19 @@
-import {
-  Box,
-  Flex,
-  Grid,
-  Input,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Progress,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Flex, Grid, Progress, Text } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Button, Panel } from "ui";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { changeTempoTranscode } from "../utils/transcode";
-import { InfosTranscoding } from "../types";
-
-interface AudioElement {
-  src: string;
-  name: string;
-}
+import { changeTempoTranscode, formatTempo } from "../utils/transcode";
+import { AudioElement, InfosTranscoding } from "../types";
+import TranscodeResult from "./TranscodeResult";
+import InputTempo from "./InputTempo";
+import SliderTempo from "./SliderTempo";
 
 /**
- * TODO: Refactor
+ * TODO: Refactor again
  * TODO: Add a button to stop transoding
- * TODO: Add progress bar
- * TODO: display warning for browser other than chrome
  */
 const MainPanel: React.FC = () => {
-  const [audioElement, setAudioElement] = useState<AudioElement[]>([]);
+  const [audioElements, setAudioElements] = useState<AudioElement[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [infos, setInfos] = useState<InfosTranscoding>({
     message: "Waiting for file",
@@ -43,14 +23,6 @@ const MainPanel: React.FC = () => {
 
   const ffmpeg = createFFmpeg();
 
-  const handleChangeSlider = (value: number) => {
-    setTempo(value / 100);
-  };
-
-  const handleChangeTempo = (valueAsString: string, valueAsNumber: number) => {
-    setTempo(valueAsNumber / 100);
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("start");
@@ -58,14 +30,14 @@ const MainPanel: React.FC = () => {
       return;
     }
     setInfos({ message: "Processing...", percent: 0 });
-    const { outputFile, outputName } = await changeTempoTranscode({
+    const transcodeRes = await changeTempoTranscode({
       ffmpeg,
       file,
       tempo,
       setInfos: setInfos,
     });
 
-    setAudioElement((els) => [...els, { src: outputFile, name: outputName }]);
+    setAudioElements((els) => [...els, transcodeRes]);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,11 +45,8 @@ const MainPanel: React.FC = () => {
     setFile(file);
   };
 
-  const tempoPercent = Math.round(tempo * 100);
-  const format = (val: number) => val + "%";
-
   return (
-    <Grid placeItems="center" marginY="24">
+    <Grid placeItems="center" marginTop="12" gap="12">
       <Panel w="2xl">
         <Text
           bgGradient="linear(to-l, #7928CA, #FF0080)"
@@ -103,34 +72,8 @@ const MainPanel: React.FC = () => {
             <Flex flexFlow="column" marginY="2">
               <Text>Select tempo</Text>
               <Flex gap="4">
-                <Slider
-                  aria-label="slider-ex-1"
-                  value={tempoPercent}
-                  onChange={handleChangeSlider}
-                  min={50}
-                  max={200}
-                >
-                  <SliderTrack>
-                    <SliderFilledTrack />
-                  </SliderTrack>
-                  <SliderThumb />
-                </Slider>
-
-                <NumberInput
-                  value={tempoPercent}
-                  format={format}
-                  min={50}
-                  max={200}
-                  onChange={handleChangeTempo}
-                  width="28"
-                  pattern="*"
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
+                <SliderTempo tempo={tempo} changeTempo={setTempo} />
+                <InputTempo tempo={tempo} changeTempo={setTempo} />
               </Flex>
             </Flex>
 
@@ -144,19 +87,9 @@ const MainPanel: React.FC = () => {
           <Text>{infos.message}</Text>
           <Progress value={infos.percent} />
         </Flex>
-
-        {audioElement.map((el) => (
-          <Flex key={el.name} gap="2">
-            <audio src={el.src} controls></audio>
-
-            <Grid placeItems="center">
-              <a href={el.src} download={el.name}>
-                <Button>Download</Button>
-              </a>
-            </Grid>
-          </Flex>
-        ))}
       </Panel>
+
+      <TranscodeResult audioElements={audioElements} />
     </Grid>
   );
 };
