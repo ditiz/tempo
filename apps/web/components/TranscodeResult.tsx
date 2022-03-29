@@ -10,7 +10,7 @@ interface TranscodeResultProps {
 }
 
 const TranscodeResult: React.FC<TranscodeResultProps> = ({ audioElements }) => {
-  if (!!audioElements.length) {
+  if (!audioElements.length) {
     return <></>;
   }
 
