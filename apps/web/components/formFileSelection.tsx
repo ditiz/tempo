@@ -1,9 +1,11 @@
 import {
   Alert,
+  AlertDescription,
   AlertIcon,
   AlertTitle,
   Box,
   Flex,
+  Grid,
   Progress,
   Text,
 } from "@chakra-ui/react";
@@ -90,14 +92,17 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
       </form>
 
       <Flex flexFlow="column" marginY="2">
-        <Flex marginY="10">
+        {!infos.isTranscoding ? (
           <Alert status={infos.message.type}>
             <AlertIcon />
             {infos.message.content}
           </Alert>
-        </Flex>
-
-        <Progress value={infos.percent} />
+        ) : (
+          <Flex flexFlow="column">
+            {infos.message.content}
+            <Progress value={infos.percent} />
+          </Flex>
+        )}
       </Flex>
     </Flex>
   );

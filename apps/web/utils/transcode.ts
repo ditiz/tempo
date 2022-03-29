@@ -42,7 +42,7 @@ export async function changeTempoTranscode({
 
     setInfos({
       message: {
-        content: `Transcoding speed ${Math.round(tempo * 100)}%...`,
+        content: `Transcoding to speed ${Math.round(tempo * 100)}%...`,
         type: AlertStatus.info,
       },
       percent: ratio * 100,
