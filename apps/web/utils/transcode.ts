@@ -1,5 +1,5 @@
 import { fetchFile, FFmpeg } from "@ffmpeg/ffmpeg";
-import { AudioElement, InfosTranscoding } from "../types";
+import { AlertStatus, AudioElement, InfosTranscoding } from "../types";
 
 interface ChangeTempoTranscodeProps {
   ffmpeg: FFmpeg;
@@ -19,29 +19,54 @@ export async function changeTempoTranscode({
   const speed = tempo * 100 + "%";
   const outputName = name.replace(/\.[^/.]+$/, `_${speed}.mp3`);
 
-  setInfos({ message: "Loading ffmpeg-core.js", percent: 0 });
+  setInfos({
+    message: { content: "Loading ffmpeg-core.js", type: AlertStatus.info },
+    percent: 0,
+    isTranscoding: true,
+  });
 
   await ffmpeg.load();
-  setInfos({ message: "Start transcoding", percent: 0 });
+  setInfos({
+    message: { content: "Start transcoding", type: AlertStatus.info },
+    percent: 0,
+    isTranscoding: true,
+  });
 
   ffmpeg.FS("writeFile", name, await fetchFile(file));
 
-  ffmpeg.setProgress(({ ratio }) =>
+  ffmpeg.setProgress(({ ratio }) => {
+    // Handle ratio > 1
+    if (ratio > 1) {
+      return;
+    }
+
     setInfos({
-      message: `Transcoding speed ${Math.round(tempo * 100)}%...`,
+      message: {
+        content: `Transcoding speed ${Math.round(tempo * 100)}%...`,
+        type: AlertStatus.info,
+      },
       percent: ratio * 100,
-    })
-  );
+      isTranscoding: true,
+    });
+  });
 
   await ffmpeg.run("-i", name, "-filter:a", `atempo=${tempo}`, outputName);
 
-  setInfos({ message: "Complete transcoding", percent: 100 });
+  setInfos({
+    message: { content: "Complete transcoding", type: AlertStatus.success },
+    percent: 100,
+    isTranscoding: false,
+  });
 
   const data = ffmpeg.FS("readFile", outputName);
 
   // Handle transcoding error
   if (data.buffer.byteLength === 0) {
-    setInfos({ message: "Error transcoding", percent: 0 });
+    setInfos({
+      message: { content: "Error transcoding", type: AlertStatus.error },
+      percent: 0,
+      isTranscoding: false,
+    });
     return;
   }
 

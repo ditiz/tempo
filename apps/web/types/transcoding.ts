@@ -1,6 +1,17 @@
+export enum AlertStatus {
+  success = "success",
+  warning = "warning",
+  error = "error",
+  info = "info",
+}
+
 export interface InfosTranscoding {
-  message: string;
+  message: {
+    content: string;
+    type?: AlertStatus;
+  };
   percent: number;
+  isTranscoding: boolean;
 }
 
 export interface AudioElement {
