@@ -116,13 +116,14 @@ const MainPanel: React.FC = () => {
                   <SliderThumb />
                 </Slider>
 
-                {/* TODO: use after to put % */}
                 <NumberInput
                   value={tempoPercent}
+                  format={format}
                   min={50}
                   max={200}
                   onChange={handleChangeTempo}
                   width="28"
+                  pattern="*"
                 >
                   <NumberInputField />
                   <NumberInputStepper>
