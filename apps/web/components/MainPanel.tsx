@@ -10,8 +10,7 @@ import SliderTempo from "./SliderTempo";
 import FormFileSelection from "./formFileSelection";
 
 /**
- * TODO: Refactor again
- * TODO: Add a button to stop transoding
+ * TODO: Add a button to stop transcoding
  */
 const MainPanel: React.FC = () => {
   const [audioElements, setAudioElements] = useState<AudioElement[]>([]);

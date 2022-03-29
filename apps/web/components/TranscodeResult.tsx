@@ -15,7 +15,18 @@ const TranscodeResult: React.FC<TranscodeResultProps> = ({ audioElements }) => {
   }
 
   return (
-    <Panel>
+    <Panel gap="4">
+      <Flex marginBottom="4">
+        <Text
+          bgGradient="linear(to-l, #7928CA, #FF0080)"
+          bgClip="text"
+          fontSize="2xl"
+          fontWeight="extrabold"
+        >
+          Results
+        </Text>
+      </Flex>
+
       {audioElements.map((audioElement) => (
         <TranscodeResultElement
           key={audioElement.name}

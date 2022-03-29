@@ -12,7 +12,7 @@ const TranscodeResultElement: React.FC<TranscodeResultElementProps> = ({
   audioElement,
 }) => {
   return (
-    <Grid gap="2">
+    <Grid gap="2" marginY="4">
       <Text>
         {audioElement.name} - {formatTempo(audioElement.tempo)}%
       </Text>

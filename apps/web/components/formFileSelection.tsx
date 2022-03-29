@@ -122,6 +122,7 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
         </Flex>
 
         <Button
+          bg="green.700"
           isLoading={infos.isTranscoding}
           loadingText="Working"
           onClick={startTranscoding}

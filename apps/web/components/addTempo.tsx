@@ -30,7 +30,9 @@ const AddTempo: React.FC<AddTempoProps> = ({ setTempos }) => {
           <SliderTempo tempo={tempo} changeTempo={setTempo} />
           <InputTempo tempo={tempo} changeTempo={setTempo} />
         </Flex>
-        <Button type="submit">Add Tempo</Button>
+        <Button bg="green.700" type="submit">
+          Add Tempo
+        </Button>
       </form>
     </Flex>
   );
