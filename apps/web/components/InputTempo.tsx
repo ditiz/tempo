@@ -28,7 +28,7 @@ const InputTempo: React.FC<InputTempoProps> = ({ tempo, changeTempo }) => {
       max={200}
       onChange={handleChangeTempo}
       width="28"
-      pattern="*"
+      pattern=".*$"
     >
       <NumberInputField />
       <NumberInputStepper>

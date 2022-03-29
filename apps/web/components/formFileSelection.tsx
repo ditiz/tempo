@@ -1,30 +1,35 @@
 import {
   Alert,
-  AlertDescription,
   AlertIcon,
-  AlertTitle,
   Box,
+  Divider,
   Flex,
-  Grid,
   Progress,
-  Text,
 } from "@chakra-ui/react";
 import { createFFmpeg } from "@ffmpeg/ffmpeg";
 import React, { useState } from "react";
 import { Button } from "ui";
-import { AlertStatus, AudioElement, InfosTranscoding } from "../types";
+import { AlertStatus, AudioElement, InfosTranscoding, Tempo } from "../types";
 import { changeTempoTranscode } from "../utils/transcode";
-import InputTempo from "./InputTempo";
-import SliderTempo from "./SliderTempo";
+import AddTempo from "./addTempo";
+import TempoElement from "./tempoElement";
 
 interface FormFileSelectionProps {
   setAudioElements: React.Dispatch<React.SetStateAction<AudioElement[]>>;
 }
 
+const defaultTempos = [
+  { value: 0.7, active: true },
+  { value: 0.76, active: true },
+  { value: 0.82, active: true },
+  { value: 0.88, active: true },
+  { value: 0.94, active: true },
+];
+
 const FormFileSelection: React.FC<FormFileSelectionProps> = ({
   setAudioElements,
 }) => {
-  const [tempo, setTempo] = useState(0.75);
+  const [tempos, setTempos] = useState<Tempo[]>(defaultTempos);
   const [file, setFile] = useState<File | null>(null);
   const [infos, setInfos] = useState<InfosTranscoding>({
     message: { content: "Waiting for file", type: AlertStatus.info },
@@ -34,24 +39,48 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
 
   const ffmpeg = createFFmpeg();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const startTranscoding = async () => {
     if (!file) {
+      setInfos({
+        message: {
+          content: "No file selected",
+          type: AlertStatus.error,
+        },
+        percent: 0,
+        isTranscoding: false,
+      });
       return;
     }
+
+    if (!tempos.length) {
+      setInfos({
+        message: {
+          content: "Add a tempo",
+          type: AlertStatus.error,
+        },
+        percent: 0,
+        isTranscoding: false,
+      });
+      return;
+    }
+
     setInfos({
       message: { content: "Processing...", type: AlertStatus.success },
       percent: 0,
       isTranscoding: true,
     });
-    const transcodeRes = await changeTempoTranscode({
-      ffmpeg,
-      file,
-      tempo,
-      setInfos: setInfos,
-    });
 
-    setAudioElements((els) => [...els, transcodeRes]);
+    console.log(tempos);
+    for (const tempo of tempos) {
+      const transcodeRes = await changeTempoTranscode({
+        ffmpeg,
+        file,
+        tempo: tempo.value,
+        setInfos: setInfos,
+      });
+
+      setAudioElements((els) => [...els, transcodeRes]);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,39 +88,48 @@ const FormFileSelection: React.FC<FormFileSelectionProps> = ({
     setFile(file);
   };
 
+  const sortTempos = (a: Tempo, b: Tempo) => {
+    return a.value - b.value;
+  };
+
   return (
     <Flex flexFlow="column" marginY="2">
-      <form onSubmit={handleSubmit}>
-        <Box
-          border="2px"
-          borderRadius="md"
-          borderColor="gray.600"
-          marginY="2"
-          padding="2"
+      <Box
+        border="2px"
+        borderRadius="md"
+        borderColor="gray.600"
+        marginY="2"
+        padding="2"
+      >
+        <input onChange={handleChange} type="file" name="file" />
+      </Box>
+
+      <AddTempo setTempos={setTempos} />
+
+      <Flex
+        justifyContent="center"
+        alignItems="center"
+        flexFlow="column"
+        gap="4"
+      >
+        <Flex gap="2" flexWrap="wrap">
+          {tempos.sort(sortTempos).map((tempo, index) => (
+            <TempoElement tempo={tempo} setTempos={setTempos} key={index} />
+          ))}
+        </Flex>
+
+        <Button
+          isLoading={infos.isTranscoding}
+          loadingText="Working"
+          onClick={startTranscoding}
         >
-          <input onChange={handleChange} type="file" name="file" />
-        </Box>
+          Start Transcoding
+        </Button>
+      </Flex>
 
-        <Flex flexFlow="column" marginY="2">
-          <Text>Select tempo</Text>
-          <Flex gap="4">
-            <SliderTempo tempo={tempo} changeTempo={setTempo} />
-            <InputTempo tempo={tempo} changeTempo={setTempo} />
-          </Flex>
-        </Flex>
+      <Divider marginY="4" />
 
-        <Flex justifyContent="center">
-          <Button
-            isLoading={infos.isTranscoding}
-            loadingText="Working"
-            type="submit"
-          >
-            Start
-          </Button>
-        </Flex>
-      </form>
-
-      <Flex flexFlow="column" marginY="2">
+      <Flex flexFlow="column">
         {!infos.isTranscoding ? (
           <Alert status={infos.message.type}>
             <AlertIcon />

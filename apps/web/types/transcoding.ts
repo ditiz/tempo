@@ -19,3 +19,8 @@ export interface AudioElement {
   name: string;
   tempo: number;
 }
+
+export interface Tempo {
+  value: number;
+  active: boolean
+}

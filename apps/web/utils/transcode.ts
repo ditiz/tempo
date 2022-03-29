@@ -25,7 +25,10 @@ export async function changeTempoTranscode({
     isTranscoding: true,
   });
 
-  await ffmpeg.load();
+  if (!ffmpeg.isLoaded()) {
+    await ffmpeg.load();
+  }
+
   setInfos({
     message: { content: "Start transcoding", type: AlertStatus.info },
     percent: 0,
